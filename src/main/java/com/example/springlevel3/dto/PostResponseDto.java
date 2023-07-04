@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -26,6 +27,6 @@ public class PostResponseDto {
         this.username = post.getUsername();
         this.createdAt = post.getCreatedAt();
         this.modifiedAt = post.getModifiedAt();
-        this.comments = post.getComments().stream().map(CommentResponseDto::new).toList();
+        this.comments = (post.getComments() == null) ? null : post.getComments().stream().map(CommentResponseDto::new).toList();
     }
 }

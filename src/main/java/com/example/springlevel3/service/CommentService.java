@@ -10,8 +10,6 @@ import com.example.springlevel3.repository.PostRepository;
 import com.example.springlevel3.repository.UserRepository;
 import com.example.springlevel3.util.JwtUtil;
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -51,10 +49,21 @@ public class CommentService {
         return ResponseEntity.status(201).body(responseDto);
     }
 
-    private Post findPost(Long id) {
-        return postRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("선택한 게시물은 존재하지 않습니다."));
+    public ResponseEntity<CommentResponseDto> updateComment(String token, Long postId, Long id, CommentRequestDto requestDto) {
+        User currentUser = getUserFromJwt(token);
+        Comment currentComment = findComment(postId, id);
+
+        if (isAuthor(currentUser.getUsername(), currentComment.getUser().getUsername())) {
+            currentComment.update(requestDto);
+        }
+
+        return ResponseEntity.status(200).body(new CommentResponseDto(currentComment));
     }
+
+    private boolean isAuthor(String username, String author) {
+        return author.equals(username);
+    }
+
     private User getUserFromJwt(String tokenValue) {
         // JWT 토큰 substring
         String token = jwtUtil.substringToken(tokenValue);
@@ -76,5 +85,15 @@ public class CommentService {
     private User findUser(String username){
         return userRepository.findByUsername(username).orElseThrow(() ->
                 new IllegalArgumentException("등록된 사용자가 없습니다."));
+    }
+
+    private Post findPost(Long id) {
+        return postRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("선택한 게시물은 존재하지 않습니다."));
+    }
+
+    private Comment findComment(Long postId, Long id) {
+        return commentRepository.findByPostIdAndId(postId, id).orElseThrow(() ->
+                new IllegalArgumentException("선택한 댓글은 존재하지 않습니다."));
     }
 }

@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import static com.example.springlevel3.util.JwtUtil.AUTHORIZATION_HEADER;
 
 @RestController
@@ -18,17 +17,26 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/comment")
+    @PostMapping("/comments")
     public ResponseEntity<CommentResponseDto> createComment(@CookieValue(AUTHORIZATION_HEADER) String token,
                                                             @PathVariable Long postId,
                                                             @RequestBody @Valid CommentRequestDto requestDto) {
         return commentService.createComment(token, postId, requestDto);
     }
 
-    @PostMapping("/comment/{id}")
+    @PutMapping("/comments/{id}")
+    public ResponseEntity<CommentResponseDto> updateComment(@CookieValue(AUTHORIZATION_HEADER) String token,
+                                                            @PathVariable Long postId,
+                                                            @PathVariable Long id,
+                                                            @RequestBody @Valid CommentRequestDto requestDto) {
+        return commentService.updateComment(token, postId, id, requestDto);
+    }
+
+    @PostMapping("/comments/{id}")
     public ResponseEntity<CommentResponseDto> deleteComment(@PathVariable Long postId,
                                                             @PathVariable Long id,
                                                             @RequestBody @Valid CommentRequestDto requestDto) {
         return null;
     }
+
 }
