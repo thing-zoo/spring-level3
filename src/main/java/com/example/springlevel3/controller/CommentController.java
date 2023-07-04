@@ -2,8 +2,8 @@ package com.example.springlevel3.controller;
 
 import com.example.springlevel3.dto.CommentRequestDto;
 import com.example.springlevel3.dto.CommentResponseDto;
+import com.example.springlevel3.dto.ErrorResponseDto;
 import com.example.springlevel3.service.CommentService;
-import jakarta.servlet.http.Cookie;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,17 +18,26 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/comment")
+    @PostMapping("/comments")
     public ResponseEntity<CommentResponseDto> createComment(@CookieValue(AUTHORIZATION_HEADER) String token,
                                                             @PathVariable Long postId,
                                                             @RequestBody @Valid CommentRequestDto requestDto) {
         return commentService.createComment(token, postId, requestDto);
     }
 
-    @PostMapping("/comment/{id}")
-    public ResponseEntity<CommentResponseDto> deleteComment(@PathVariable Long postId,
+    @PutMapping("/comments/{id}")
+    public ResponseEntity<CommentResponseDto> updateComment(@CookieValue(AUTHORIZATION_HEADER) String token,
+                                                            @PathVariable Long postId,
                                                             @PathVariable Long id,
                                                             @RequestBody @Valid CommentRequestDto requestDto) {
-        return null;
+        return commentService.updateComment(token, postId, id, requestDto);
     }
+
+    @DeleteMapping("/comments/{id}")
+    public ResponseEntity<ErrorResponseDto> deleteComment(@CookieValue(AUTHORIZATION_HEADER) String token,
+                                                          @PathVariable Long postId,
+                                                          @PathVariable Long id) {
+        return commentService.deleteComment(token, postId, id);
+    }
+
 }

@@ -2,35 +2,28 @@ package com.example.springlevel3.service;
 
 import com.example.springlevel3.dto.CommentRequestDto;
 import com.example.springlevel3.dto.CommentResponseDto;
+import com.example.springlevel3.dto.ErrorResponseDto;
 import com.example.springlevel3.entity.Comment;
 import com.example.springlevel3.entity.Post;
 import com.example.springlevel3.entity.User;
 import com.example.springlevel3.repository.CommentRepository;
-import com.example.springlevel3.repository.PostRepository;
-import com.example.springlevel3.repository.UserRepository;
-import com.example.springlevel3.util.JwtUtil;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final PostRepository postRepository;
-    private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
+    private final UserService userService;
+    private final PostService postService;
 
 
     public ResponseEntity<CommentResponseDto> createComment(String token, Long postId, CommentRequestDto requestDto){
-        User currentUser = getUserFromJwt(token);
-
-        Post currentPost = findPost(postId);
-
+        User currentUser = userService.getUserFromJwt(token);
+        Post currentPost = postService.findPost(postId);
 
         Comment comment = Comment.builder()
                 .content(requestDto.getContent())
@@ -51,30 +44,43 @@ public class CommentService {
         return ResponseEntity.status(201).body(responseDto);
     }
 
-    private Post findPost(Long id) {
-        return postRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("선택한 게시물은 존재하지 않습니다."));
-    }
-    private User getUserFromJwt(String tokenValue) {
-        // JWT 토큰 substring
-        String token = jwtUtil.substringToken(tokenValue);
+    @Transactional
+    public ResponseEntity<CommentResponseDto> updateComment(String token, Long postId, Long id, CommentRequestDto requestDto) {
+        User currentUser = userService.getUserFromJwt(token);
+        Comment currentComment = findComment(postId, id);
 
-        // 토큰 검증
-        if(!jwtUtil.validateToken(token)){
-            throw new IllegalArgumentException("Token Error");
+        if (currentUser.getUsername().equals(currentComment.getUser().getUsername())) {
+            currentComment.update(requestDto);
         }
 
-        // 토큰에서 사용자 정보 가져오기
-        Claims info = jwtUtil.getUserInfoFromToken(token);
-        // 사용자 username
-        String username = info.getSubject();
-        System.out.println("username = " + username);
-
-        return this.findUser(username);
+        return ResponseEntity.status(200).body(new CommentResponseDto(currentComment));
     }
 
-    private User findUser(String username){
-        return userRepository.findByUsername(username).orElseThrow(() ->
-                new IllegalArgumentException("등록된 사용자가 없습니다."));
+    public ResponseEntity<ErrorResponseDto> deleteComment(String token, Long postId, Long id) {
+        User currentUser = userService.getUserFromJwt(token);
+        Comment comment = findComment(postId, id);
+        if(!userService.isAdmin(currentUser)){
+            if(!comment.getUser().getUsername().equals(currentUser.getUsername()))
+                throw new IllegalArgumentException("작성자만 삭제/수정할 수 있습니다.");
+        }
+
+        commentRepository.delete(comment);
+
+        return ResponseEntity.ok(
+                ErrorResponseDto.builder()
+                        .status(200L)
+                        .error("댓글 삭제 완료")
+                        .build()
+        );
     }
+
+    private boolean isAuthor(String username, String author) {
+        return author.equals(username);
+    }
+
+    private Comment findComment(Long postId, Long id) {
+        return commentRepository.findByPostIdAndId(postId, id).orElseThrow(() ->
+                new IllegalArgumentException("선택한 댓글은 존재하지 않습니다."));
+    }
+
 }

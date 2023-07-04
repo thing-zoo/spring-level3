@@ -1,11 +1,11 @@
 package com.example.springlevel3.controller;
 
+import com.example.springlevel3.dto.ErrorResponseDto;
 import com.example.springlevel3.dto.PostRequestDto;
 import com.example.springlevel3.dto.PostResponseDto;
 import com.example.springlevel3.service.PostService;
 import com.example.springlevel3.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,9 +21,7 @@ public class PostController {
     @PostMapping("/posts")
     public ResponseEntity<PostResponseDto> createPost(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String token,
                                                       @RequestBody PostRequestDto requestDto) {
-        PostResponseDto responseDto = postService.createPost(token, requestDto);
-
-        return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+        return postService.createPost(token, requestDto);
     }
 
     // 전체 게시글 조회
@@ -41,19 +39,15 @@ public class PostController {
     // 선택한 게시글 수정
     @PutMapping("/posts/{id}")
     public ResponseEntity<PostResponseDto> updatePost(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String token,
-                                                                                   @PathVariable Long id,
-                                                                                   @RequestBody PostRequestDto requestDto) {
-        PostResponseDto responseDto = postService.updatePost(id, token, requestDto);
-
-        return ResponseEntity.ok(responseDto);
+                                                      @PathVariable Long id,
+                                                      @RequestBody PostRequestDto requestDto) {
+        return postService.updatePost(token, id, requestDto);
     }
 
     // 선택한 게시글 삭제
     @DeleteMapping("/posts/{id}")
-    public ResponseEntity<String> deletePost(@RequestHeader("Authorization") String token,
-                                             @PathVariable Long id,
-                                             @RequestBody PostRequestDto requestDto) {
-        postService.deletePost(token, id, requestDto);
-        return ResponseEntity.ok().body("게시글 삭제 성공");
+    public ResponseEntity<ErrorResponseDto> deletePost(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String token,
+                                                       @PathVariable Long id) {
+        return postService.deletePost(token, id);
     }
 }

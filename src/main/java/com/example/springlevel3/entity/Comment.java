@@ -1,7 +1,7 @@
 package com.example.springlevel3.entity;
 
+import com.example.springlevel3.dto.CommentRequestDto;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -32,5 +32,9 @@ public class Comment extends Timestamped {
         this.content = content;
         this.post = post;
         this.user = user;
+    }
+
+    public void update(CommentRequestDto requestDto) {
+        this.content = requestDto.getContent();
     }
 }
