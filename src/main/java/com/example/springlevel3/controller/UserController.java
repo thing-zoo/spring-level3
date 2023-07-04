@@ -30,26 +30,5 @@ public class UserController {
         return new ResponseEntity<>("로그인 성공", HttpStatus.OK);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException exception) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
-    }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public String handleValidationError(MethodArgumentNotValidException exception) {
-        BindingResult bindingResult = exception.getBindingResult();
-
-        StringBuilder builder = new StringBuilder();
-        for (FieldError fieldError : bindingResult.getFieldErrors()) {
-            builder.append("[");
-            builder.append(fieldError.getField());
-            builder.append("](은)는 ");
-            builder.append(fieldError.getDefaultMessage());
-            builder.append(" 입력된 값: [");
-            builder.append(fieldError.getRejectedValue());
-            builder.append("]");
-        }
-
-        return builder.toString();
-    }
 }
