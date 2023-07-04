@@ -1,5 +1,6 @@
 package com.example.springlevel3.service;
 
+import com.example.springlevel3.dto.ErrorResponseDto;
 import com.example.springlevel3.dto.UserRequestDto;
 import com.example.springlevel3.entity.User;
 import com.example.springlevel3.entity.UserRoleEnum;
@@ -8,6 +9,7 @@ import com.example.springlevel3.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,7 @@ public class UserService {
     // ADMIN_TOKEN: 관리자인지 확인하기 위한 토큰
     // 현업에서는 관리자 페이지나 승인자에 의해 결재하는 과정으로 함
     private final String ADMIN_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
-    public void signup(UserRequestDto requestDto) {
+    public ResponseEntity<ErrorResponseDto> signup(UserRequestDto requestDto) {
         String username = requestDto.getUsername();
         String password = passwordEncoder.encode(requestDto.getPassword());
 
@@ -45,9 +47,16 @@ public class UserService {
         // 사용자 등록
         User user = new User(username, password, role);
         userRepository.save(user);
+
+        ErrorResponseDto responseDto = ErrorResponseDto.builder()
+                .status(201L)
+                .error("회원가입 성공")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
     }
 
-    public void login(UserRequestDto requestDto, HttpServletResponse res) {
+    public ResponseEntity<ErrorResponseDto> login(UserRequestDto requestDto, HttpServletResponse res) {
         String username = requestDto.getUsername();
         String password = requestDto.getPassword();
 
@@ -63,9 +72,13 @@ public class UserService {
         // JWT 생성후 쿠키에 저장, response 객체 쿠키에 추가
         String token = jwtUtil.createToken(username, user.getRole());
         jwtUtil.addJwtToCookie(token, res);
-    }
-    protected boolean isAdmin(User user){
-        return user.getRole().equals(UserRoleEnum.ADMIN);
+
+        ErrorResponseDto responseDto = ErrorResponseDto.builder()
+                .status(200L)
+                .error("로그인 성공")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
     }
 
     protected User getUserFromJwt(String tokenValue) {
@@ -89,5 +102,8 @@ public class UserService {
     private User findUser(String username){
         return userRepository.findByUsername(username).orElseThrow(() ->
                 new IllegalArgumentException("등록된 사용자가 없습니다."));
+    }
+    protected boolean isAdmin(User user){
+        return user.getRole().equals(UserRoleEnum.ADMIN);
     }
 }
