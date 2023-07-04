@@ -18,16 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
     @PostMapping("/users/signup")
-    public ResponseEntity<?> signup(@RequestBody @Valid UserRequestDto requestDto) {
+    public ResponseEntity<String> signup(@RequestBody @Valid UserRequestDto requestDto) {
         userService.signup(requestDto);
 
-//        return ResponseEntity.created().body("회원가입 완료");
         return new ResponseEntity<>("회원가입 성공", HttpStatus.CREATED);
     }
 
     @PostMapping("/users/login")
-    public ResponseEntity<?> login(@RequestBody @Valid UserRequestDto requestDto, HttpServletResponse res) {
+    public ResponseEntity<String> login(@RequestBody @Valid UserRequestDto requestDto, HttpServletResponse res) {
         userService.login(requestDto, res);
-        return ResponseEntity.ok().body("로그인 성공");
+        return new ResponseEntity<>("로그인 성공", HttpStatus.OK);
     }
 }
