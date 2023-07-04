@@ -33,7 +33,7 @@ public class CommentController {
         return commentService.updateComment(token, postId, id, requestDto);
     }
 
-    @PostMapping("/comments/{id}")
+    @DeleteMapping("/comments/{id}")
     public ResponseEntity<ErrorResponseDto> deleteComment(@CookieValue(AUTHORIZATION_HEADER) String token,
                                                           @PathVariable Long postId,
                                                           @PathVariable Long id) {
