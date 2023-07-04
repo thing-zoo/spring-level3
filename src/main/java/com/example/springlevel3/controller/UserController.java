@@ -29,6 +29,4 @@ public class UserController {
         userService.login(requestDto, res);
         return new ResponseEntity<>("로그인 성공", HttpStatus.OK);
     }
-
-
 }
