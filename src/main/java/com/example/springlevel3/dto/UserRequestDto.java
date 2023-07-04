@@ -11,7 +11,8 @@ public class UserRequestDto {
     private String username;
 
     @NotBlank
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,15}$", message = "비밀번호는 대소문자와 숫자 포함 8~15자리 이내로 입력해주세요.")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[~!@#$%^&*()+|=])[A-Za-z\\d~!@#$%^&*()+|=]{8,15}$",
+             message = "비밀번호는 대소문자와 숫자, 특수문자 포함 8~15자리 이내로 입력해주세요.")
     private String password;
 
     private boolean admin = false;

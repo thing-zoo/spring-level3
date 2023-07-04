@@ -1,12 +1,13 @@
 package com.example.springlevel3.service;
 
+import com.example.springlevel3.dto.ErrorResponseDto;
 import com.example.springlevel3.dto.PostRequestDto;
 import com.example.springlevel3.dto.PostResponseDto;
 import com.example.springlevel3.entity.Post;
+import com.example.springlevel3.entity.User;
 import com.example.springlevel3.repository.PostRepository;
-import com.example.springlevel3.util.JwtUtil;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,19 +17,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
-    private final JwtUtil jwtUtil;
+    private final UserService userService;
 
-    public PostResponseDto createPost(String token, PostRequestDto requestDto) {
-        String substringToken = jwtUtil.substringToken(token);
-        boolean isValidateToken = jwtUtil.validateToken(substringToken);
+    public ResponseEntity<PostResponseDto> createPost(String token, PostRequestDto requestDto) {
+        User user = userService.getUserFromJwt(token);
 
-        if (isValidateToken) {
-            Post post = new Post(requestDto);
-            Post savedPost = postRepository.save(post);
-            return new PostResponseDto(savedPost);
-        }
+        Post post = new Post(requestDto, user);
+        Post savedPost = postRepository.save(post);
 
-        return null;
+        return ResponseEntity.status(201).body(new PostResponseDto(savedPost));
     }
 
     public List<PostResponseDto> getPosts() {
@@ -44,57 +41,41 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto updatePost(Long id, String token, PostRequestDto requestDto) {
+    public ResponseEntity<PostResponseDto> updatePost(String token, Long id, PostRequestDto requestDto) {
+        User user = userService.getUserFromJwt(token);
         Post post = findPost(id);
 
-        if (isValidate(token, post)) {
-            post.update(requestDto);
-
-            return new PostResponseDto(post);
+        if(!userService.isAdmin(user)){
+            if (!user.getUsername().equals(post.getUsername())) {
+                throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
+            }
         }
+        post.update(requestDto);
 
-        return null;
+        return ResponseEntity.status(200).body(new PostResponseDto(post));
     }
 
-    public void deletePost(String token, Long id, PostRequestDto requestDto) {
+    public ResponseEntity<ErrorResponseDto> deletePost(String token, Long id) {
+        User user = userService.getUserFromJwt(token);
         Post post = findPost(id);
 
-        if (isValidate(token, post)) {
-            postRepository.delete(post);
+        if(!userService.isAdmin(user)){
+            if (!user.getUsername().equals(post.getUsername())) {
+                throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
+            }
         }
+        postRepository.delete(post);
+
+        ErrorResponseDto responseDto = ErrorResponseDto.builder()
+                .status(200L)
+                .error("게시물 삭제 성공")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
     }
 
-    private boolean isValidate(String token, Post post) {
-        // 토큰 검사
-        String username = getUsernameFromJwt(token);
-
-        if (username.equals(post.getUsername())) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private Post findPost(Long id) {
+    protected Post findPost(Long id) {
         return postRepository.findById(id).orElseThrow(() ->
                 new IllegalArgumentException("선택한 게시물은 존재하지 않습니다."));
-    }
-
-    private String getUsernameFromJwt(String tokenValue) {
-        // JWT 토큰 substring
-        String token = jwtUtil.substringToken(tokenValue);
-
-        // 토큰 검증
-        if(!jwtUtil.validateToken(token)){
-            throw new IllegalArgumentException("Token Error");
-        }
-
-        // 토큰에서 사용자 정보 가져오기
-        Claims info = jwtUtil.getUserInfoFromToken(token);
-        // 사용자 username
-        String username = info.getSubject();
-        System.out.println("username = " + username);
-
-        return username;
     }
 }
