@@ -47,13 +47,15 @@ public class CommentService {
     @Transactional
     public ResponseEntity<CommentResponseDto> updateComment(String token, Long postId, Long id, CommentRequestDto requestDto) {
         User currentUser = userService.getUserFromJwt(token);
-        Comment currentComment = findComment(postId, id);
+        Comment comment = findComment(postId, id);
 
-        if (currentUser.getUsername().equals(currentComment.getUser().getUsername())) {
-            currentComment.update(requestDto);
+        if(!userService.isAdmin(currentUser)){
+            if(!comment.getUser().getUsername().equals(currentUser.getUsername()))
+                throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
         }
+        comment.update(requestDto);
 
-        return ResponseEntity.status(200).body(new CommentResponseDto(currentComment));
+        return ResponseEntity.status(200).body(new CommentResponseDto(comment));
     }
 
     public ResponseEntity<ErrorResponseDto> deleteComment(String token, Long postId, Long id) {
@@ -61,7 +63,7 @@ public class CommentService {
         Comment comment = findComment(postId, id);
         if(!userService.isAdmin(currentUser)){
             if(!comment.getUser().getUsername().equals(currentUser.getUsername()))
-                throw new IllegalArgumentException("작성자만 삭제/수정할 수 있습니다.");
+                throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
         }
 
         commentRepository.delete(comment);
@@ -72,10 +74,6 @@ public class CommentService {
                         .error("댓글 삭제 완료")
                         .build()
         );
-    }
-
-    private boolean isAuthor(String username, String author) {
-        return author.equals(username);
     }
 
     private Comment findComment(Long postId, Long id) {

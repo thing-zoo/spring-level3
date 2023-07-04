@@ -45,9 +45,12 @@ public class PostService {
         User user = userService.getUserFromJwt(token);
         Post post = findPost(id);
 
-        if (user.getUsername().equals(post.getUsername())) {
-            post.update(requestDto);
+        if(!userService.isAdmin(user)){
+            if (!user.getUsername().equals(post.getUsername())) {
+                throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
+            }
         }
+        post.update(requestDto);
 
         return ResponseEntity.status(200).body(new PostResponseDto(post));
     }
@@ -56,9 +59,12 @@ public class PostService {
         User user = userService.getUserFromJwt(token);
         Post post = findPost(id);
 
-        if (user.getUsername().equals(post.getUsername())) {
-            postRepository.delete(post);
+        if(!userService.isAdmin(user)){
+            if (!user.getUsername().equals(post.getUsername())) {
+                throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
+            }
         }
+        postRepository.delete(post);
 
         ErrorResponseDto responseDto = ErrorResponseDto.builder()
                 .status(200L)
