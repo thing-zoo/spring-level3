@@ -10,6 +10,7 @@ import com.example.springlevel3.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,9 +23,7 @@ public class CommentService {
 
     public ResponseEntity<CommentResponseDto> createComment(String token, Long postId, CommentRequestDto requestDto){
         User currentUser = userService.getUserFromJwt(token);
-
         Post currentPost = postService.findPost(postId);
-
 
         Comment comment = Comment.builder()
                 .content(requestDto.getContent())
@@ -45,12 +44,12 @@ public class CommentService {
         return ResponseEntity.status(201).body(responseDto);
     }
 
-
+    @Transactional
     public ResponseEntity<CommentResponseDto> updateComment(String token, Long postId, Long id, CommentRequestDto requestDto) {
         User currentUser = userService.getUserFromJwt(token);
         Comment currentComment = findComment(postId, id);
 
-        if (isAuthor(currentUser.getUsername(), currentComment.getUser().getUsername())) {
+        if (currentUser.getUsername().equals(currentComment.getUser().getUsername())) {
             currentComment.update(requestDto);
         }
 
@@ -83,4 +82,5 @@ public class CommentService {
         return commentRepository.findByPostIdAndId(postId, id).orElseThrow(() ->
                 new IllegalArgumentException("선택한 댓글은 존재하지 않습니다."));
     }
+
 }
