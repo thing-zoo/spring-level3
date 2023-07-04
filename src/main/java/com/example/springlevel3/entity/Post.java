@@ -5,10 +5,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "post")
+@Table(name = "posts")
 public class Post extends Timestamped {
     @Id
     @Column(name = "post_id")
@@ -21,8 +23,14 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
     private String username;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    private List<Comment> comments;
 
     public Post(PostRequestDto requestDto) {
         this.title = requestDto.getTitle();
