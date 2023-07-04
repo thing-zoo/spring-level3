@@ -3,12 +3,14 @@ package com.example.springlevel3.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@ToString
 @NoArgsConstructor
 @Table(name = "users")
 public class User extends Timestamped {

@@ -1,6 +1,5 @@
 package com.example.springlevel3.dto;
 
-import com.example.springlevel3.entity.Comment;
 import com.example.springlevel3.entity.Post;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;

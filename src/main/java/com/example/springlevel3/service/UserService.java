@@ -5,6 +5,7 @@ import com.example.springlevel3.entity.User;
 import com.example.springlevel3.entity.UserRoleEnum;
 import com.example.springlevel3.repository.UserRepository;
 import com.example.springlevel3.util.JwtUtil;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -62,5 +63,31 @@ public class UserService {
         // JWT 생성후 쿠키에 저장, response 객체 쿠키에 추가
         String token = jwtUtil.createToken(username, user.getRole());
         jwtUtil.addJwtToCookie(token, res);
+    }
+    protected boolean isAdmin(User user){
+        return user.getRole().equals(UserRoleEnum.ADMIN);
+    }
+
+    protected User getUserFromJwt(String tokenValue) {
+        // JWT 토큰 substring
+        String token = jwtUtil.substringToken(tokenValue);
+
+        // 토큰 검증
+        if(!jwtUtil.validateToken(token)){
+            throw new IllegalArgumentException("Token Error");
+        }
+
+        // 토큰에서 사용자 정보 가져오기
+        Claims info = jwtUtil.getUserInfoFromToken(token);
+        // 사용자 username
+        String username = info.getSubject();
+        System.out.println("username = " + username);
+
+        return this.findUser(username);
+    }
+
+    private User findUser(String username){
+        return userRepository.findByUsername(username).orElseThrow(() ->
+                new IllegalArgumentException("등록된 사용자가 없습니다."));
     }
 }
