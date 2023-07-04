@@ -59,7 +59,9 @@ public class PostService {
     public void deletePost(String token, Long id, PostRequestDto requestDto) {
         Post post = findPost(id);
 
-        if (isValidate(token, post)) {
+        boolean check = isValidate(token, post);
+        System.out.println("check = " + check);
+        if (check) {
             postRepository.delete(post);
         }
     }

@@ -26,9 +26,9 @@ public class CommentController {
     }
 
     @PostMapping("/comment/{id}")
-    public ResponseEntity<CommentResponseDto> deleteComment(@PathVariable Long postId,
-                                                            @PathVariable Long id,
-                                                            @RequestBody @Valid CommentRequestDto requestDto) {
+    public ResponseEntity<CommentResponseDto> deleteComment(@CookieValue(AUTHORIZATION_HEADER) String token,
+                                                            @PathVariable Long postId,
+                                                            @PathVariable Long id) {
         return null;
     }
 }

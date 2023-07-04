@@ -50,7 +50,7 @@ public class PostController {
 
     // 선택한 게시글 삭제
     @DeleteMapping("/posts/{id}")
-    public ResponseEntity<String> deletePost(@RequestHeader("Authorization") String token,
+    public ResponseEntity<String> deletePost(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String token,
                                              @PathVariable Long id,
                                              @RequestBody PostRequestDto requestDto) {
         postService.deletePost(token, id, requestDto);

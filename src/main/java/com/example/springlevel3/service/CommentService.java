@@ -12,9 +12,13 @@ import com.example.springlevel3.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +53,11 @@ public class CommentService {
                 .build();
 
         return ResponseEntity.status(201).body(responseDto);
+    }
+
+    @PostMapping("/comment/{id}")
+    public ResponseEntity<CommentResponseDto> deleteComment(Long postId, Long id, CommentRequestDto requestDto) {
+        return null;
     }
 
     private Post findPost(Long id) {
