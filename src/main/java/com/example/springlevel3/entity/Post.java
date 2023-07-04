@@ -31,6 +31,7 @@ public class Post extends Timestamped {
     private User user;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    @OrderBy("id desc")
     private List<Comment> comments;
 
     public Post(PostRequestDto requestDto, User user) {
