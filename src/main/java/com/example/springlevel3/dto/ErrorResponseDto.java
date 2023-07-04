@@ -1,8 +1,12 @@
 package com.example.springlevel3.dto;
 
+import lombok.Builder;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
 
+@Getter
 public class ErrorResponseDto {
 
     LocalDateTime timestamp;
@@ -10,6 +14,7 @@ public class ErrorResponseDto {
     String error;
     String path;
 
+    @Builder
     public ErrorResponseDto(Long status, String error, String path) {
         this.timestamp = LocalDateTime.now();
         this.status = status;
